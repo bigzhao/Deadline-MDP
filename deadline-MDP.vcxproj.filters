@@ -45,5 +45,11 @@
     <None Include="README.md">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="my_test.data">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="my_test(j32).data">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>
