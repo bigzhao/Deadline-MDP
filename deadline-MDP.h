@@ -87,7 +87,7 @@ double critical_path_makespan(struct node *start, struct node *end, int nodes_le
 
 void differentiate_nodes(struct node *nodes, int nodes_length);
 
-void partition_nodes(struct node *start, struct node *end, std::vector<struct branch *> *branchs, int nodes_length);
+void partition_nodes(struct node *start, struct node *end, std::vector<struct branch *> *branchs, int nodes_length, int* topo);
 
 void deadline_assignment(struct node *nodes, int nodes_length, int *topo, struct node *start, struct node *end,
 	std::vector<struct branch *> *branchs, double time_constrain);

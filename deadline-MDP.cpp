@@ -13,7 +13,7 @@ int main()
 	end = (struct node *)malloc(sizeof(struct node));
 	memset(end, 0, sizeof(struct node));
 	double *prob = NULL;
-	read_data("my_test(j32).data", &nodes, &nodes_length, &time_constraint, &topos, &num_topos, start, end, &prob);
+	read_data("j601_1.txt", &nodes, &nodes_length, &time_constraint, &topos, &num_topos, start, end, &prob);
 	for (int i = 1; i < num_topos; i++)
 		prob[i] += prob[i - 1];
 	double total = 0;
@@ -77,7 +77,7 @@ void deadline_MDP(struct node *nodes, int nodes_length, double time_constraint, 
 	//	else
 	//		printf("Synchronization_task\n");
 	//}
-	partition_nodes(start, end, &branchs, nodes_length);
+	partition_nodes(start, end, &branchs, nodes_length, topo);
 	int branchs_length = branchs.size();
 	//int *contained_nodes = (int *)calloc(nodes_length + 2, sizeof(int));
 	//contained_nodes[(nodes + 5)->id] = 1;
@@ -411,7 +411,7 @@ void rt_dl_arrange(struct node *start, struct node *end, std::vector<struct bran
 }
 
 
-void partition_nodes(struct node *start, struct node *end, std::vector<struct branch *> *branchs, int nodes_length)
+void partition_nodes(struct node *start, struct node *end, std::vector<struct branch *> *branchs, int nodes_length, int* topo)
 {
 	int i, size;
 	struct node *operating_node = NULL, *tmp = NULL;
@@ -425,17 +425,27 @@ void partition_nodes(struct node *start, struct node *end, std::vector<struct br
 		q.pop();
 		for (i = 0; i < operating_node->num_succ; i++) {
 			if (operating_node->succ[i]->type == Simple_task) {
+				if (!topo[operating_node->succ[i]->id])
+					continue;
 				size = 1;
 				tmp = operating_node->succ[i];
 				bran = (struct branch *)malloc(sizeof(struct branch));
 				bran->time = tmp->min_time;
 				bran->head = operating_node;
 				bran->start = tmp;
+				int sig = 0; // 记录是否在路径上
 				while (tmp->succ[0]->type == Simple_task) {
+					if (!topo[tmp->succ[0]->id]) {
+						free(bran);
+						sig = 1;
+						break;
+					}
 					size++;
 					tmp = tmp->succ[0];
 					bran->time += tmp->min_time;
 				}
+				if (sig)
+					continue;
 				bran->tail = tmp->succ[0];
 				bran->size = size;
 				if (bran->tail != end && !push_on[bran->tail->id]) {
