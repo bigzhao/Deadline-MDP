@@ -93,6 +93,7 @@
     <Text Include="fMRI.txt" />
     <Text Include="j30_1.txt" />
     <Text Include="j601_1.txt" />
+    <Text Include="j901_1.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="my_test(j32).data" />

@@ -40,6 +40,9 @@
     <Text Include="j601_1.txt">
       <Filter>资源文件</Filter>
     </Text>
+    <Text Include="j901_1.txt">
+      <Filter>资源文件</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">

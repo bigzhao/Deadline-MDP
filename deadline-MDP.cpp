@@ -13,11 +13,13 @@ int main()
 	end = (struct node *)malloc(sizeof(struct node));
 	memset(end, 0, sizeof(struct node));
 	double *prob = NULL;
-	read_data("j601_1.txt", &nodes, &nodes_length, &time_constraint, &topos, &num_topos, start, end, &prob);
+	read_data("my_test(j32).data", &nodes, &nodes_length, &time_constraint, &topos, &num_topos, start, end, &prob);
 	for (int i = 1; i < num_topos; i++)
 		prob[i] += prob[i - 1];
 	double total = 0;
 	int index;
+	//double* topo_deadline_prob = (double *)malloc(sizeof(double)* num_topos);
+	//topo_deadline(nodes, nodes_length, topos, num_topos, start, end, topo_deadline_prob);
 	// boost random function
 	//for (int i = 0; i < num_topos; i++) {
 	//	for (int j = 0; j < nodes_length + 2; j++)
@@ -28,6 +30,8 @@ int main()
 	// eet 标识start end节点
 	FILE *fp = NULL;
 	fp = fopen("permute.txt", "w");
+	//for (int i = 0; i < num_topos; i++)
+	//	fprintf(fp, "%lf\n", topo_deadline_prob[i]);
 	fprintf(fp, "%d\n", ITER);
 	printf("num:%d\n", num_topos);
 	boost::uniform_int<> ui(0, num_topos - 1);   /*函数声明 0-100（包括100）的整数*/
@@ -47,10 +51,48 @@ int main()
 	printf("%d times AVERAGE:%lf\n", ITER, total / ITER);
 	fprintf(fp, "\n %d times runs.Average cost:%lf", ITER, total / ITER);
 	fclose(fp);
+	//free(topo_deadline_prob);
 	return 0;
 }
 
-
+//根据关键路径计算其deadline比例
+void topo_deadline(struct node *nodes, int nodes_length, int **topos, int num_topos, struct node *start, struct node *end, double *topo_deadline_prob)
+{
+	struct solution *s1 = (struct solution *)malloc(sizeof(struct solution) * (nodes_length + 2)),
+		*s2 = (struct solution *)malloc(sizeof(struct solution) * (nodes_length + 2));
+	struct instance *null_inst = (struct instance *)malloc(sizeof(struct instance));
+	null_inst->time = 0;
+	null_inst->cost = 0;
+	for (int i = 0; i < nodes_length; i++) {
+		int min_index = 0;
+		for (int j = 1; j < nodes[i].num_instances; j++) {
+			if (nodes[i].instances[j].time < nodes[i].instances[min_index].time)
+				min_index = j;
+		}
+		s1[i].inst = &nodes[i].instances[min_index];
+		s2[i].inst = &nodes[i].instances[min_index];
+	}
+	// 为start 和end分配空的inst
+	for (int i = nodes_length; i < nodes_length + 2; i++) {
+		s1[i].inst = null_inst;
+		s2[i].inst = null_inst;
+	}
+	int *topo = (int *)malloc(sizeof(int)* (nodes_length + 2));
+	for (int i = 0; i < nodes_length + 2; i++)
+		topo[i] = 1;
+	calculate_est(start, end, nodes_length, topo, s1, topo);
+	calculate_lst(start, end, nodes_length, topo, s2, topo);
+	int total_critical = critical_path_makespan(start, end, nodes_length, topo, s1, topo);
+	for (int i = 0; i < num_topos; i++) {
+		calculate_est(start, end, nodes_length, topos[i], s1, topos[i]);
+		calculate_lst(start, end, nodes_length, topos[i], s2, topos[i]);
+		topo_deadline_prob[i] = critical_path_makespan(start, end, nodes_length, topos[i], s1, topos[i]) / total_critical;
+		printf("%d prob: %lf\n", i, topo_deadline_prob[i]);
+	}
+	free(topo);
+	free(s1);
+	free(s2);
+}
 void deadline_MDP(struct node *nodes, int nodes_length, double time_constraint, int *topo, double *total, struct node *start, struct node *end)
 {
 	std::vector<struct branch *> branchs;

@@ -105,4 +105,6 @@ void rt_dl_arrange(struct node *start, struct node *end, std::vector<struct bran
 
 int find_contained_nodes(struct node *start, struct node *end, int *contained_nodes, int *topo);
 
+void topo_deadline(struct node *nodes, int nodes_length, int **topos, int num_topos, struct node *start, struct node *end, double *topo_deadline_prob);
+
 #endif
